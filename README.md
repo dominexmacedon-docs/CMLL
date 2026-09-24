@@ -22,35 +22,86 @@ CMLL provides a Linux x86_64 release that can be installed directly into the sys
 ### Install
 
 Create or use the installation `Makefile` in the project directory:
+### 1. Makefile
 
-```makefile
+Makefile
+
+```
 CMLL_VERSION := cmll-v1.0.0
-CMLL_URL := [https://github.com/dominexmacedon-docs/CMLL/releases/download/$(CMLL_VERSION)/cmll-linux-x86_64.zip](https://github.com/dominexmacedon-docs/CMLL/releases/download/$(CMLL_VERSION)/cmll-linux-x86_64.zip)
+CMLL_URL := https://github.com/dominexmacedon-docs/CMLL/releases/download/$(CMLL_VERSION)/cmll-linux-x86_64.zip
+
+CMLL_EXTENSION_VERSION := cmll-vscode-extension-v1.0.0
+CMLL_EXTENSION_URL := https://github.com/dominexmacedon-docs/CMLL/releases/download/$(CMLL_EXTENSION_VERSION)/cmll-vscode-66f935d2a9866a2f00dadda2e07a93b271e2e3de.zip
 
 INSTALL_DIR := /usr/local/bin
 BINARY := cmll
-ZIP := cmll-linux-x86_64.zip
 
-.PHONY: install uninstall clean
+TEMP_DIR := .cmll-install
+CLI_ZIP := $(TEMP_DIR)/cmll-linux-x86_64.zip
+EXTENSION_ZIP := $(TEMP_DIR)/cmll-vscode-extension.zip
 
-install:
-	@echo "Downloading CMLL $(CMLL_VERSION)..."
-	curl -L "$(CMLL_URL)" -o "$(ZIP)"
-	@echo "Extracting CMLL..."
-	unzip -o "$(ZIP)"
-	@echo "Installing CMLL to $(INSTALL_DIR)..."
-	sudo install -m 755 "$(BINARY)" "$(INSTALL_DIR)/$(BINARY)"
-	@echo "CMLL installed successfully."
-	@echo "Run: cmll"
+.PHONY: install install-cli install-extension uninstall clean
+
+install: install-cli install-extension
+	@echo "CMLL CLI and VS Code extension installed successfully."
+
+install-cli:
+	@mkdir -p "$(TEMP_DIR)"
+	@curl -fL "$(CMLL_URL)" -o "$(CLI_ZIP)"
+	@rm -rf "$(TEMP_DIR)/cli"
+	@mkdir -p "$(TEMP_DIR)/cli"
+	@unzip -o "$(CLI_ZIP)" -d "$(TEMP_DIR)/cli"
+	@BINARY_PATH=$$(find "$(TEMP_DIR)/cli" -type f -name "$(BINARY)" -print -quit); \
+	if [ -z "$$BINARY_PATH" ]; then \
+		echo "Error: CMLL binary was not found."; \
+		exit 1; \
+	fi; \
+	sudo install -Dm755 "$$BINARY_PATH" "$(INSTALL_DIR)/$(BINARY)"
+
+install-extension:
+	@command -v code >/dev/null 2>&1 || { \
+		echo "Error: VS Code 'code' command was not found."; \
+		exit 1; \
+	}
+	@mkdir -p "$(TEMP_DIR)"
+	@curl -fL "$(CMLL_EXTENSION_URL)" -o "$(EXTENSION_ZIP)"
+	@rm -rf "$(TEMP_DIR)/extension"
+	@mkdir -p "$(TEMP_DIR)/extension"
+	@unzip -o "$(EXTENSION_ZIP)" -d "$(TEMP_DIR)/extension"
+	@VSIX_PATH=$$(find "$(TEMP_DIR)/extension" -type f -name "*.vsix" -print -quit); \
+	if [ -z "$$VSIX_PATH" ]; then \
+		echo "Error: VSIX file was not found."; \
+		exit 1; \
+	fi; \
+	code --install-extension "$$VSIX_PATH" --force
 
 uninstall:
-	@echo "Removing CMLL..."
-	sudo rm -f "$(INSTALL_DIR)/$(BINARY)"
-	@echo "CMLL removed."
+	@sudo rm -f "$(INSTALL_DIR)/$(BINARY)"
+	@code --uninstall-extension dominexmacedon.cmll-language || true
 
 clean:
-	rm -f "$(ZIP)" "$(BINARY)"
+	@rm -rf "$(TEMP_DIR)"
+```
 
+### 2. Plain command
+
+Run this command in your terminal to install both the CMLL CLI and the VS Code extension:
+
+Bash
+
+```
+curl -fL "https://github.com/dominexmacedon-docs/CMLL/releases/download/cmll-v1.0.0/cmll-linux-x86_64.zip" -o /tmp/cmll.zip && \
+rm -rf /tmp/cmll-install && \
+mkdir -p /tmp/cmll-install && \
+unzip -o /tmp/cmll.zip -d /tmp/cmll-install && \
+BINARY_PATH=$(find /tmp/cmll-install -type f -name cmll -print -quit) && \
+sudo install -Dm755 "$BINARY_PATH" /usr/local/bin/cmll && \
+curl -fL "https://github.com/dominexmacedon-docs/CMLL/releases/download/cmll-vscode-extension-v1.0.0/cmll-vscode-66f935d2a9866a2f00dadda2e07a93b271e2e3de.zip" -o /tmp/cmll-extension.zip && \
+rm -rf /tmp/cmll-extension && \
+mkdir -p /tmp/cmll-extension && \
+unzip -o /tmp/cmll-extension.zip -d /tmp/cmll-extension && \
+VSIX_PATH=$(find /tmp/cmll-extension -type f -name "*.vsix" -print -quit) && \
+code --install-extension "$VSIX_PATH" --force
 ```
 
 Run:
