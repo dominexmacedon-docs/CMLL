@@ -31,7 +31,7 @@ CMLL_VERSION := cmll-v1.0.0
 CMLL_URL := https://github.com/dominexmacedon-docs/CMLL/releases/download/$(CMLL_VERSION)/cmll-linux-x86_64.zip
 
 CMLL_EXTENSION_VERSION := cmll-vscode-extension-v1.0.0
-CMLL_EXTENSION_URL := https://github.com/dominexmacedon-docs/CMLL/releases/download/$(CMLL_EXTENSION_VERSION)/cmll-vscode-66f935d2a9866a2f00dadda2e07a93b271e2e3de.zip
+CMLL_EXTENSION_URL := https://github.com/dominexmacedon-docs/CMLL/releases/download/cmll-vscode-extension-v1.0.0/cmll-vscode-9c7cf384a4e2b0ac85147bafd934b6a0a1084a2e.zip
 
 INSTALL_DIR := /usr/local/bin
 BINARY := cmll
@@ -96,7 +96,7 @@ mkdir -p /tmp/cmll-install && \
 unzip -o /tmp/cmll.zip -d /tmp/cmll-install && \
 BINARY_PATH=$(find /tmp/cmll-install -type f -name cmll -print -quit) && \
 sudo install -Dm755 "$BINARY_PATH" /usr/local/bin/cmll && \
-curl -fL "https://github.com/dominexmacedon-docs/CMLL/releases/download/cmll-vscode-extension-v1.0.0/cmll-vscode-66f935d2a9866a2f00dadda2e07a93b271e2e3de.zip" -o /tmp/cmll-extension.zip && \
+curl -fL "https://github.com/dominexmacedon-docs/CMLL/releases/download/cmll-vscode-extension-v1.0.0/cmll-vscode-9c7cf384a4e2b0ac85147bafd934b6a0a1084a2e.zip" -o /tmp/cmll-extension.zip && \
 rm -rf /tmp/cmll-extension && \
 mkdir -p /tmp/cmll-extension && \
 unzip -o /tmp/cmll-extension.zip -d /tmp/cmll-extension && \
